@@ -115,21 +115,21 @@ static bool CheckInputOutShape(const aclTensor* x, const aclTensorList* weight, 
     return false;
   }
   int64_t nAfterHalve = static_cast<int64_t>(n / SPLIT);
-  // x的shape期望为[M, K] 
+  // x shape is expected to be [M, K] 
   op::Shape xExpectShape = {m, k};
-  // TensorList当中的每个weight的NDshape期望为[K, N] 
+  // The ND shape of each weight in TensorList is expected to be [K, N] 
   op::Shape weightNDExpectShape = {k, n};
-  // TensorList当中的每个weight的NZshape期望为[N // 32, K // 16, 16, 32] 
+  // The NZ shape of each weight in TensorList is expected to be [N // 32, K // 16, 16, 32] 
   op::Shape weightNZExpectShape = {static_cast<int64_t>(n / NZ_DIM_3), 
                                    static_cast<int64_t>(k / NZ_DIM_2),
                                    NZ_DIM_2, NZ_DIM_3};
-  // weightScale的shape期望为[N] 
+  // weightScale shape is expected to be [N] 
   op::Shape weightScaleExpectShape = {n};
-  // xScale的shape期望为[E, N] 
+  // xScale shape is expected to be [E, N] 
   op::Shape xScaleExpectShape = {m};
-  // output的shape期望为[M, N]
+  // output shape is expected to be [M, N]
   op::Shape outputExpectShape = {m, nAfterHalve};
-  // outputScale的shape期望为[M]
+  // outputScale shape is expected to be [M]
   op::Shape outputScaleExpectShape = {m};
   for (size_t i = 0; i < weight->Size(); ++i) {
     op::Format weightViewFormat = (*weight)[i]->GetViewFormat();
@@ -145,7 +145,7 @@ static bool CheckInputOutShape(const aclTensor* x, const aclTensorList* weight, 
 
   OP_CHECK_SHAPE_NOT_EQUAL_WITH_EXPECTED_SIZE(output, outputExpectShape, return false);
   OP_CHECK_SHAPE_NOT_EQUAL_WITH_EXPECTED_SIZE(outputScale, outputScaleExpectShape, return false);
-  // groupList的长度应小于等于weight的专家数
+  // The length of groupList should be less than or equal to the number of experts in weight
   int64_t groupListLen = groupList->GetViewShape().GetDim(0);
   if(groupListLen > e) {
     OP_LOGE(ACLNN_ERR_PARAM_INVALID, 
@@ -211,23 +211,23 @@ static bool CheckFormat(const aclTensor* x, const aclTensorList* weight, const a
 static aclnnStatus CheckParams(const aclTensor* x, const aclTensorList* weight, const aclTensor* bias, const aclTensor* offset,
                                const aclTensorList* weightScale, const aclTensor* xScale, const aclTensor* groupList,
                                const aclTensor* output, const aclTensor* outputScale, const aclTensor* outputOffset) {
-  // 1. 检查参数是否为空指针
+  // 1. Check if parameters are null pointers
   CHECK_RET(CheckNotNull(x, weight, bias, offset, weightScale, xScale, 
                          groupList, output, outputScale, outputOffset), ACLNN_ERR_PARAM_NULLPTR);
 
-  // 2. 校验输入、输出参数维度
+  // 2. Verify input and output parameter dimensions
   CHECK_RET(CheckInputOutDims(x, weight, weightScale, xScale, 
                               groupList, output, outputScale), ACLNN_ERR_PARAM_INVALID);
   
-  // 3. 校验输入、输出shape参数
+  // 3. Verify input and output shape parameters
   CHECK_RET(CheckInputOutShape(x, weight, weightScale, xScale, 
                                groupList, output, outputScale), ACLNN_ERR_PARAM_INVALID);
 
-  // 4. 检查输入的数据类型是否在支持的数据类型范围之内
+  // 4. Check if the input data types are within the supported data type range
   CHECK_RET(CheckDtypeValid(x, weight, weightScale, xScale, 
                             groupList, output, outputScale), ACLNN_ERR_PARAM_INVALID);
 
-  // 5. 检查数据形状是否支持
+  // 5. Check if data format is supported
   CHECK_RET(CheckFormat(x, weight, output), ACLNN_ERR_PARAM_INVALID);
 
   return ACLNN_SUCCESS;
@@ -253,20 +253,20 @@ static aclnnStatus aclnnGroupedMatmulSwigluQuantGetWorkspaceSizeCommon(const acl
                                                                        aclTensor *output, aclTensor *outputScale,
                                                                        aclTensor *outputOffset, uint64_t *workspaceSize,
                                                                        aclOpExecutor **executor){
-  // 固定写法，创建OpExecutor
+  // Fixed pattern, create OpExecutor
   auto uniqueExecutor = CREATE_EXECUTOR();
   CHECK_RET(uniqueExecutor.get() != nullptr, ACLNN_ERR_INNER_CREATE_EXECUTOR);
-  // 固定写法，参数检查
+  // Fixed pattern, parameter check
   auto ret = CheckParams(x, weight, bias, offset, weightScale, xScale, 
                          groupList, output, outputScale, outputOffset);
   CHECK_RET(ret == ACLNN_SUCCESS, ret);
-  // 空Tensor场景
+  // Empty tensor scenario
   if (output->IsEmpty() || groupList->IsEmpty() || outputScale->IsEmpty()) {
     *workspaceSize = 0;
     uniqueExecutor.ReleaseTo(executor);
     return ACLNN_SUCCESS;
   }
-  // 转连续
+  // Convert to contiguous
   x = l0op::Contiguous(x, uniqueExecutor.get());
   CHECK_RET(x != nullptr, ACLNN_ERR_INNER_NULLPTR);
   CHECK_COND(DataContiguous(weight, uniqueExecutor.get()) == ACLNN_SUCCESS, ACLNN_ERR_PARAM_INVALID,
@@ -277,7 +277,7 @@ static aclnnStatus aclnnGroupedMatmulSwigluQuantGetWorkspaceSizeCommon(const acl
   CHECK_RET(xScale != nullptr, ACLNN_ERR_INNER_NULLPTR);
   groupList = l0op::Contiguous(groupList, uniqueExecutor.get());
   CHECK_RET(groupList != nullptr, ACLNN_ERR_INNER_NULLPTR);
-  // 调用L0算子能力
+  // Call L0 operator capability
   auto ret_0 = l0op::GroupedMatmulSwigluQuant(x, weight, weightScale, xScale, groupList, uniqueExecutor.get());
   CHECK_RET(ret_0 != std::tuple(nullptr, nullptr), ACLNN_ERR_INNER_NULLPTR);
   auto out0 = std::get<OUTPUT_IDX_0>(ret_0);
@@ -302,23 +302,23 @@ aclnnStatus aclnnGroupedMatmulSwigluQuantWeightNZTensorListGetWorkspaceSize(cons
   L2_DFX_PHASE_1(aclnnGroupedMatmulSwigluQuantWeightNZTensorList,
                  DFX_IN(x, weight, bias, offset, weightScale, xScale, groupList),
                  DFX_OUT(output, outputScale, outputOffset));
-  // weight在该场景下强制绑定StorageFormat 和 ViewFormat 为NZ
+  // weight is forcibly bound to StorageFormat and ViewFormat as NZ in this scenario
   CHECK_RET(weight != nullptr, ACLNN_ERR_PARAM_NULLPTR);
   for (size_t i = 0; i < weight->Size(); ++i) {
     auto storgeShape = (*weight)[i]->GetStorageShape();
     auto viewShape = (*weight)[i]->GetViewShape();
     aclTensor* weightNZ = const_cast<aclTensor*>((*weight)[i]);
-    // weight的StorageFormat无条件视为NZ
+    // The StorageFormat of weight is unconditionally regarded as NZ
     weightNZ->SetStorageFormat(op::Format::FORMAT_FRACTAL_NZ);
     if (viewShape.GetDimNum() == WEIGHT_NZ_DIM_LIMIT){
-      // 若weight的viewShape为4维则视为NZ
+      // If the viewShape of weight is 4-dimensional, it is regarded as NZ
       weightNZ->SetViewFormat(op::Format::FORMAT_FRACTAL_NZ);
     } else if (viewShape.GetDimNum() == WEIGHT_ND_DIM_LIMIT){
-      // 若weight的viewShape为2维则视为ND
+      // If the viewShape of weight is 2-dimensional, it is regarded as ND
       weightNZ->SetViewFormat(op::Format::FORMAT_ND);
     }
   }
-  // 调用公共接口
+  // Call the common interface
   return aclnnGroupedMatmulSwigluQuantGetWorkspaceSizeCommon(x, weight, bias, offset, weightScale, xScale, groupList, 
     output, outputScale, outputOffset, workspaceSize, executor);
 }

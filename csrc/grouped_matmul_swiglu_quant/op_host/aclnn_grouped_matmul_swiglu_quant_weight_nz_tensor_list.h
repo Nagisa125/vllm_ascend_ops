@@ -16,22 +16,22 @@ extern "C" {
 #endif
 
 /**
- * @brief aclnnGroupedMatmulSwigluQuantWeightNZTensorList的第一段接口，根据具体的计算流程，计算workspace大小。
+ * @brief The first interface of aclnnGroupedMatmulSwigluQuantWeightNZTensorList, which calculates the workspace size according to the specific calculation process.
  * @domain aclnn_ops_infer
  *
- * @param [in] x: 表示公式中的x，数据类型支持INT8数据类型，数据格式支持ND。
+ * @param [in] x: Represents x in the formula. The data type supports INT8, and the data format supports ND.
  * @param [in] weight:
- * 表示公式中的weight，数据类型支持INT8数据类型，数据格式支持NZ。
- * @param [in] weightScale: 表示量化参数，数据类型支持FLOAT16、BFLOAT16、FLOAT32数据类型，数据格式支持ND，支持的最大长度为128个。
- * 表示per Channel参数，数据类型支持FLOAT16，BFLOAT16数据类型，数据格式支持ND。
+ * Represents weight in the formula. The data type supports INT8, and the data format supports NZ.
+ * @param [in] weightScale: Represents quantization parameters. The data type supports FLOAT16, BFLOAT16, and FLOAT32. The data format supports ND, with a maximum length of 128.
+ * Represents per Channel parameters. The data type supports FLOAT16 and BFLOAT16. The data format supports ND.
  * @param [in] xScale:
- * 表示per Token量化参数，数据类型支持FLOAT32数据类型，数据格式支持ND。
- * @param [in] groupList: 必选参数，代表输入和输出分组轴上的索引情况，数据类型支持INT64。
- * @param [out] quantOutput: 表示公式中的out，数据类型支持INT8数据类型，数据格式支持ND。
- * @param [out] quantScaleOutput: 表示公式中的outQuantScale，数据类型支持Float32数据类型。
- * @param [out] workspaceSize: 返回用户需要在npu device侧申请的workspace大小。
- * @param [out] executor: 返回op执行器，包含算子计算流程。
- * @return aclnnStatus: 返回状态码。
+ * Represents per Token quantization parameters. The data type supports FLOAT32, and the data format supports ND.
+ * @param [in] groupList: Required parameter, representing the index situation on the input and output grouping axes. The data type supports INT64.
+ * @param [out] quantOutput: Represents out in the formula. The data type supports INT8, and the data format supports ND.
+ * @param [out] quantScaleOutput: Represents outQuantScale in the formula. The data type supports Float32.
+ * @param [out] workspaceSize: Returns the workspace size that users need to apply for on the npu device side.
+ * @param [out] executor: Returns the op executor, containing the operator calculation process.
+ * @return aclnnStatus: Returns the status code.
  */
 __attribute__((visibility("default"))) aclnnStatus aclnnGroupedMatmulSwigluQuantWeightNZTensorListGetWorkspaceSize(
     const aclTensor *x, const aclTensorList *weight, const aclTensor *bias, const aclTensor *offset,
@@ -39,12 +39,12 @@ __attribute__((visibility("default"))) aclnnStatus aclnnGroupedMatmulSwigluQuant
     aclTensor *output, aclTensor *outputScale, aclTensor *outputOffset, uint64_t *workspaceSize, aclOpExecutor **executor);
 
 /**
- * @brief aclnnGroupedMatmulSwigluQuantWeightNZTensorList的第二段接口，用于执行计算。
- * @param [in] workspace: 在npu device侧申请的workspace内存起址。
- * @param [in] workspaceSize: 在npu device侧申请的workspace大小，由第一段接口aclnnGroupedMatmulSwigluQuantWeightNZTensorListGetWorkspaceSize获取。
- * @param [in] stream: acl stream流。
- * @param [in] executor: op执行器，包含了算子计算流程。
- * @return aclnnStatus: 返回状态码。
+ * @brief The second interface of aclnnGroupedMatmulSwigluQuantWeightNZTensorList, used to execute calculations.
+ * @param [in] workspace: The starting address of the workspace memory applied for on the npu device side.
+ * @param [in] workspaceSize: The workspace size applied for on the npu device side, obtained from the first interface aclnnGroupedMatmulSwigluQuantWeightNZTensorListGetWorkspaceSize.
+ * @param [in] stream: acl stream.
+ * @param [in] executor: op executor, containing the operator calculation process.
+ * @return aclnnStatus: Returns the status code.
  */
 __attribute__((visibility("default"))) aclnnStatus aclnnGroupedMatmulSwigluQuantWeightNZTensorList(void* workspace,
     uint64_t workspaceSize, aclOpExecutor* executor, aclrtStream stream);

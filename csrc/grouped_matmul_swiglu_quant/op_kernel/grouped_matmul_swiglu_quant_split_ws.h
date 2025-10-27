@@ -173,7 +173,7 @@ __aicore__ inline void GMMSwigluSplitWorkSpaceCompute<mmType, sync, CHANNELDTYPE
     workspaceSplitConfig.leftMatrixStartIndex = workspaceSplitLoopIdx * gmmBaseParams->mLimit;
     workspaceSplitConfig.rightMatrixExpertStartIndex = workspaceSplitConfig.rightMatrixExpertNextStartIndex;
     workspaceSplitConfig.rightMatrixExpertEndIndex = workspaceSplitConfig.rightMatrixExpertStartIndex;
-    // 计算右专家矩阵的终止索引(rightMatrixExpertEndIndex) 和下一次的起始索引(rightMatrixExpertNextStartIndex)
+    // Calculate the right expert matrix end index (rightMatrixExpertEndIndex) and the next start index (rightMatrixExpertNextStartIndex)
     int32_t curTaskNum = 0;
     int32_t nextTaskNum = 0;
     while(workspaceSplitConfig.rightMatrixExpertEndIndex < gmmSwiglu->groupListLen)
@@ -393,11 +393,11 @@ __aicore__ inline void GMMSwigluSplitWorkSpaceCompute<mmType, sync, CHANNELDTYPE
 template <typename mmType, bool sync, typename CHANNELDTYPE>
 __aicore__ inline void GMMSwigluSplitWorkSpaceCompute<mmType, sync, CHANNELDTYPE>::UpdateVecConfig(uint32_t blockIdx, VecConfig& vecConfig)
 {
-    // 第一步 读取grouplist reduceSum 计算总数据个数
+    // Step 1: Read grouplist reduceSum to calculate total data count
     vecConfig.M = workspaceSplitConfig.isLastLoop \
                     ? workspaceSplitConfig.lastLoopTaskSize\
                     : workspaceSplitConfig.notLastTaskSize;
-    // 第二步 计算分核
+    // Step 2: Calculate core allocation
     uint32_t eachCoreTaskNum = (vecConfig.M + aivCoreNum - 1) / aivCoreNum;
     vecConfig.usedCoreNum = vecConfig.M >= aivCoreNum ? aivCoreNum : vecConfig.M;
     uint32_t tailCoreIdx = vecConfig.M - (eachCoreTaskNum - 1) * vecConfig.usedCoreNum;
@@ -420,13 +420,13 @@ __aicore__ inline void GMMSwigluSplitWorkSpaceCompute<mmType, sync, CHANNELDTYPE
         }
         curStartIdx -= tempM;
     }
-    // 第三步 计算总数据量
+    // Step 3: Calculate total data volume
     vecConfig.outLoopNum = (vecConfig.taskNum + gmmSwiglu->maxProcessRowNum - 1) / gmmSwiglu->maxProcessRowNum;
     vecConfig.tailLoopNum = vecConfig.taskNum % gmmSwiglu->maxProcessRowNum 
                             ? vecConfig.taskNum % gmmSwiglu->maxProcessRowNum 
                             : gmmSwiglu->maxProcessRowNum;
     pipe->Reset();
-    // 第四步 申请空间
+    // Step 4: Allocate space
     pipe->InitBuffer(mmOutQueue, 1, gmmSwiglu->maxProcessRowNum * gmmSwiglu->tokenLen * sizeof(int32_t));
     pipe->InitBuffer(perChannelScaleInQueue, 1, gmmSwiglu->tokenLen * sizeof(float));
     pipe->InitBuffer(quantOutQueue, 1, gmmSwiglu->maxProcessRowNum * gmmSwiglu->tokenLen / 2 * sizeof(int8_t));
@@ -469,7 +469,7 @@ __aicore__ inline void GMMSwigluSplitWorkSpaceCompute<mmType, sync, CHANNELDTYPE
 template <typename mmType, bool sync, typename CHANNELDTYPE>
 template <typename DTYPE_CS>
 __aicore__ inline void GMMSwigluSplitWorkSpaceCompute<mmType, sync, CHANNELDTYPE>::UpdateChannelScale(uint32_t loopIdx, VecConfig& vecConfig){
-    // 更新perChannel
+    // Update perChannel
     if (unlikely(vecConfig.nextUpadteInterVal == 0)) {
         int64_t loop = gmmSwiglu->groupListLen - vecConfig.curGroupIdx;
         while (loop--) {
@@ -522,7 +522,7 @@ __aicore__ inline void GMMSwigluSplitWorkSpaceCompute<mmType, sync, CHANNELDTYPE
 
 template <typename mmType, bool sync, typename CHANNELDTYPE>
 __aicore__ inline void GMMSwigluSplitWorkSpaceCompute<mmType, sync, CHANNELDTYPE>::Swiglu(uint32_t loopIdx, VecConfig& vecConfig) {
-    // 高阶API swiglu
+    // High-level API swiglu
     LocalTensor<float> _inMMLocal = mmOutQueue.DeQue<float>();
     float beta = 1.0f;
     LocalTensor<float> workspaceLocal= reduceWorkspace.Get<float>();

@@ -12,25 +12,6 @@ torch_npu.npu.config.allow_internal_format = True
 enable_custom_op()
 
 
-def shape_nd_to_nz(shape):
-    assert len(shape) >= 2
-    batch = shape[:-2]
-    a, b = shape[-2], shape[-1]
-    a0, b0 = 16, 32
-    return list(batch) + [math.ceil(b / b0), math.ceil(a / a0), a0, b0]
-
-
-def gen_axes_for_transpose(offset, base):
-    return [x for x in range(offset)] + [x + offset for x in base]
-
-
-def convert_nd_to_nz(x):
-    array_trans = gen_axes_for_transpose(len(x.shape) - 2, [2, 0, 1, 3])
-    x_shape = shape_nd_to_nz(x.shape)
-    *_, n1, m1, m0, n0 = x_shape
-    return x.reshape(x_shape[:-4] + [m1, m0, n1, n0]).permute(*array_trans)
-
-
 def gmm_swiglu_quant(x: torch.Tensor, weight: torch.Tensor,
                      perChannelScale: torch.Tensor,
                      perTokenScale: torch.Tensor, m: int):

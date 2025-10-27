@@ -185,7 +185,6 @@ class Process:
 
     @staticmethod
     def main() -> str:
-        # 参数注册
         ps = argparse.ArgumentParser(description="Parse changed files",
                                      epilog="Best Regards!")
         ps.add_argument("-c",
@@ -200,11 +199,11 @@ class Process:
                         nargs=1,
                         type=Path,
                         help="changed files desc file.")
-        # 子命令行
+
         sub_ps = ps.add_subparsers(help="Sub-Command")
         p_ut = sub_ps.add_parser('get_related_ut', help="Get related ut.")
         p_ut.set_defaults(func=Process.get_related_ut)
-        # 处理
+
         args = ps.parse_args()
         rst = args.func(args)
         return rst

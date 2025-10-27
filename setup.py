@@ -319,6 +319,18 @@ class cmake_build_ext(build_ext):
                         shutil.copy(src_path, dst_path)
                         print(f"Copy: {src_path} -> {dst_path}")
 
+        # copy back _cann_ops_custom directory
+        src_cann_ops_custom = os.path.join(ROOT_DIR, "vllm_ascend",
+                                           "_cann_ops_custom")
+        dst_cann_ops_custom = os.path.join(self.build_lib, "vllm_ascend",
+                                           "_cann_ops_custom")
+        if os.path.exists(src_cann_ops_custom):
+            import shutil
+            if os.path.exists(dst_cann_ops_custom):
+                shutil.rmtree(dst_cann_ops_custom)
+            shutil.copytree(src_cann_ops_custom, dst_cann_ops_custom)
+            print(f"Copy: {src_cann_ops_custom} -> {dst_cann_ops_custom}")
+
     def run(self):
         # First, ensure ACLNN custom-ops is built and installed.
         self.run_command("build_aclnn")

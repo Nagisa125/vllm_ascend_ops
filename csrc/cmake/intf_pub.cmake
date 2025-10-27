@@ -7,8 +7,8 @@
 # See LICENSE in the root of the software repository for the full text of the License.
 # ======================================================================================================================
 
-# Custom 包场景, Host 侧各 Target 公共编译配置
-# 注意: 为保证与 built-in 包编译流程兼容, intf_pub 名称不可变更
+# Custom package scenario, public compilation configuration for Host side targets
+# Note: To ensure compatibility with the built-in package compilation process, the intf_pub name cannot be changed
 add_library(intf_pub INTERFACE)
 target_include_directories(intf_pub
         INTERFACE
@@ -62,7 +62,7 @@ target_compile_options(intf_pub
 )
 target_compile_definitions(intf_pub
         INTERFACE
-            $<$<COMPILE_LANGUAGE:CXX>:_GLIBCXX_USE_CXX11_ABI=0>     # 必须设置, 以保证与 CANN 包内其他依赖库兼容
+            $<$<COMPILE_LANGUAGE:CXX>:_GLIBCXX_USE_CXX11_ABI=0>
             $<$<CONFIG:Release>:_FORTIFY_SOURCE=2>
 )
 target_link_options(intf_pub

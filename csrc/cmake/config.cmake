@@ -8,7 +8,7 @@
 # ======================================================================================================================
 
 ########################################################################################################################
-# 环境检查
+# Environment Check
 ########################################################################################################################
 
 # Python3
@@ -18,7 +18,7 @@ if ((NOT Python3_FOUND) OR (${Python3_EXECUTABLE} STREQUAL ""))
 endif ()
 set(HI_PYTHON   "${Python3_EXECUTABLE}" CACHE   STRING   "python executor")
 
-# 获取基础 CANN 路径
+# Get the base CANN path
 if (CUSTOM_ASCEND_CANN_PACKAGE_PATH)
     set(ASCEND_CANN_PACKAGE_PATH  ${CUSTOM_ASCEND_CANN_PACKAGE_PATH})
 elseif (DEFINED ENV{ASCEND_HOME_PATH})
@@ -31,10 +31,10 @@ endif ()
 message(STATUS "ASCEND_CANN_PACKAGE_PATH=${ASCEND_CANN_PACKAGE_PATH}")
 
 ########################################################################################################################
-# 公共配置
+# Common Configuration
 ########################################################################################################################
 
-# 开关类
+# Switches
 option(PREPARE_BUILD              "Prepare build."                  OFF)
 option(ENABLE_OPS_HOST            "Build ops host."                 ON)
 option(ENABLE_OPS_KERNEL          "Build ops kernel."               ON)
@@ -43,14 +43,14 @@ if (TESTS_EXAMPLE_OPS_TEST OR TESTS_UT_OPS_TEST)
 endif ()
 set(OP_DEBUG_CONFIG               "false"                         CACHE   STRING   "op debug config")
 
-# 路径配置
-#   源码树相关路径
+# Path configuration
+#   Source tree related paths
 get_filename_component(OPS_ADV_DIR                  "${CMAKE_CURRENT_SOURCE_DIR}"           REALPATH)
 get_filename_component(OPS_ADV_CMAKE_DIR            "${OPS_ADV_DIR}/cmake"                  REALPATH)
 get_filename_component(OPS_ADV_UTILS_KERNEL_INC     "${OPS_ADV_DIR}/utils/inc/kernel"   REALPATH)
 
 
-#   构建树相关路径
+#   Build tree related paths
 set(ASCEND_IMPL_OUT_DIR           ${CMAKE_CURRENT_BINARY_DIR}/impl                     CACHE   STRING "ascend impl output directories")
 set(ASCEND_BINARY_OUT_DIR         ${CMAKE_CURRENT_BINARY_DIR}/binary                   CACHE   STRING "ascend binary output directories")
 set(ASCEND_AUTOGEN_DIR            ${CMAKE_CURRENT_BINARY_DIR}/autogen                  CACHE   STRING "Auto generate file directories")
@@ -88,7 +88,7 @@ set(CUSTOM_DIR         ${CMAKE_BINARY_DIR}/custom)
 set(TILING_CUSTOM_DIR  ${CUSTOM_DIR}/op_impl/ai_core/tbe/op_tiling)
 set(TILING_CUSTOM_FILE ${TILING_CUSTOM_DIR}/liboptiling.so)
 
-# 兼容ascendc变更临时适配，待切换新版本ascendc新版本后删除
+# Temporary adaptation for ascendc changes, to be removed after switching to the new version of ascendc
 if(EXISTS ${ASCENDC_CMAKE_UTIL_DIR}/ascendc_gen_options.py)
     set(ADD_OPS_COMPILE_OPTION_V2 ON)
 else()
@@ -96,26 +96,26 @@ else()
 endif()
 
 ########################################################################################################################
-# CMake 选项, 缺省参数设置
-#   按 CMake 构建过程对 CMake 选项, CMake 缺省参数进行配置
-#   CMake 构建过程: 1) 配置阶段(Configure); 2) 构建阶段(Build); 3) 安装阶段(Install);
+# CMake Options, Default Parameters Setting
+#   Configure CMake options and default parameters according to the CMake build process
+#   CMake build process: 1) Configuration phase; 2) Build phase; 3) Installation phase;
 ########################################################################################################################
 if (BUILD_OPEN_PROJECT)
-    # 构建阶段(Build)
-    #   构建类型
-    #       CMake中的Generator(生成器)是用于生成本地/本机构建系统的工具。一般分为两种:
-    #       1. 单配置生成器(Single-configuration generator):
-    #          在配置(Configuration)阶段，仅允许指定一种构建类型，通过变量 CMAKE_BUILD_TYPE 指定;
-    #          在构建阶段(Build)无法更改构建类型，仅允许使用配置(Configuration)阶段通过变量 CMAKE_BUILD_TYPE 指定的构建类型;
-    #          常见的此类型生成器有: Ninja, Unix Makefiles
-    #       2. 多配置生成器(Multi-configuration generator) :
-    #          在配置(Configuration)阶段，仅指定构建阶段(Build)可用的构建类型列表，通过变量 CMAKE_CONFIGURATION_TYPES 指定;
-    #          在构建阶段(Build)通过 ”--config“ 参数，指定构建阶段具体的构建类型;
-    #          常见的此类型生成器有: Xcode, Visual Studio
-    #       所以:
-    #           1. 单配置生成器(Single-configuration generator)场景下，如果构建类型(CMAKE_BUILD_TYPE)未指定，则默认为 Debug ;
-    #           2. 多配置生成器(Multi-configuration generator)场景下，如果构建阶段可选的构建类型(CMAKE_CONFIGURATION_TYPES)未指定，
-    #              则默认将其指定为CMake允许的构建类型全集 [Debug;Release;MinSizeRel;RelWithDebInfo]
+    # Build phase
+    #   Build type
+    #       The Generator in CMake is a tool used to generate native build systems. Generally divided into two types:
+    #       1. Single-configuration generator:
+    #          In the configuration phase, only one build type is allowed to be specified through the variable CMAKE_BUILD_TYPE;
+    #          In the build phase, the build type cannot be changed, and only the build type specified through the variable CMAKE_BUILD_TYPE in the configuration phase can be used;
+    #          Common generators of this type include: Ninja, Unix Makefiles
+    #       2. Multi-configuration generator:
+    #          In the configuration phase, only the list of build types available in the build phase is specified through the variable CMAKE_CONFIGURATION_TYPES;
+    #          In the build phase, the specific build type of the build phase is specified through the "--config" parameter;
+    #          Common generators of this type include: Xcode, Visual Studio
+    #       Therefore:
+    #           1. In the single-configuration generator scenario, if the build type (CMAKE_BUILD_TYPE) is not specified, the default is Debug;
+    #           2. In the multi-configuration generator scenario, if the build types available in the build phase (CMAKE_CONFIGURATION_TYPES) are not specified,
+    #              it is defaulted to the full set of build types allowed by CMake [Debug;Release;MinSizeRel;RelWithDebInfo]
     get_property(GENERATOR_IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
     if (GENERATOR_IS_MULTI_CONFIG)
         if (NOT CMAKE_CONFIGURATION_TYPES)
@@ -127,17 +127,17 @@ if (BUILD_OPEN_PROJECT)
         endif ()
     endif ()
 
-    # 构建阶段(Build)
-    #   可执行文件运行时库文件搜索路径 RPATH
-    #       在 UTest 及 Example 场景不略去 RPATH
+    # Build phase
+    #   Executable runtime library file search path RPATH
+    #       Do not skip RPATH in UTest and Example scenarios
     if (TESTS_UT_OPS_TEST OR TESTS_EXAMPLE_OPS_TEST)
         set(CMAKE_SKIP_RPATH FALSE)
     else ()
         set(CMAKE_SKIP_RPATH TRUE)
     endif ()
 
-    # 构建阶段(Build)
-    #   CCACHE 配置
+    # Build phase
+    #   CCACHE configuration
     if (ENABLE_CCACHE)
         if (CUSTOM_CCACHE)
             set(CCACHE_PROGRAM ${CUSTOM_CCACHE})
@@ -150,10 +150,10 @@ if (BUILD_OPEN_PROJECT)
         endif ()
     endif ()
 
-    # 安装阶段(Install)
-    #   安装路径
-    #       未显示设置 CMAKE_INSTALL_PREFIX (即 CMAKE_INSTALL_PREFIX 取缺省值)时,
-    #       修正其取值与构建树根目录 CMAKE_CURRENT_BINARY_DIR 平级
+    # Installation phase
+    #   Installation path
+    #       When CMAKE_INSTALL_PREFIX is not explicitly set (i.e., CMAKE_INSTALL_PREFIX takes the default value),
+    #       correct its value to be level with the build tree root directory CMAKE_CURRENT_BINARY_DIR
     if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
         get_filename_component(_Install_Path_Prefix "${CMAKE_CURRENT_BINARY_DIR}/../output" REALPATH)
         set(CMAKE_INSTALL_PREFIX    "${_Install_Path_Prefix}"  CACHE STRING "Install path" FORCE)
@@ -161,7 +161,7 @@ if (BUILD_OPEN_PROJECT)
 endif ()
 
 ########################################################################################################################
-# 公开编译参数
+# Public Compilation Parameters
 ########################################################################################################################
 list(TRANSFORM ASCEND_COMPUTE_UNIT TOLOWER)
 if (BUILD_OPEN_PROJECT)
@@ -175,7 +175,7 @@ if (BUILD_OPEN_PROJECT)
 endif ()
 
 ########################################################################################################################
-# 预处理
+# Preprocessing
 ########################################################################################################################
 if (BUILD_OPEN_PROJECT)
     if (NOT PREPARE_BUILD AND ENABLE_OPS_KERNEL)
@@ -226,7 +226,7 @@ if (BUILD_OPEN_PROJECT)
 endif ()
 
 ########################################################################################################################
-# 其他配置
+# Other Configuration
 ########################################################################################################################
 if (BUILD_OPEN_PROJECT)
     if (TESTS_UT_OPS_TEST)
