@@ -9,11 +9,11 @@ case "$SOC_VERSION" in
         exit 0
         ;;
     "ASCEND910B1")
-        CUSTOM_OPS="grouped_matmul_swiglu_quant"
+        CUSTOM_OPS="grouped_matmul_swiglu_quant lightning_indexer"
         SOC_ARG="ascend910b"
         ;;
     "ASCEND910C")
-        CUSTOM_OPS="grouped_matmul_swiglu_quant"
+        CUSTOM_OPS="grouped_matmul_swiglu_quant lightning_indexer"
         SOC_ARG="ascend910_93"
         ;;
     *)

@@ -135,6 +135,37 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> grouped_matmul_swiglu_quant_weigh
     return std::tuple<at::Tensor, at::Tensor, at::Tensor>(output, output_scale, output_offset);
 }
 
+at::Tensor npu_lightning_indexer_meta(
+    const at::Tensor &query, const at::Tensor &key, const at::Tensor &weights,
+    const c10::optional<at::Tensor> &actual_seq_lengths_query,
+    const c10::optional<at::Tensor> &actual_seq_lengths_key,
+    const c10::optional<at::Tensor> &block_table, c10::string_view layout_query,
+    c10::string_view layout_key, int64_t sparse_count, int64_t sparse_mode)
+{
+    // npu tensor max size
+    const int SIZE = 8;
+    const int DIM_0 = 0;
+    const int DIM_1 = 1;
+    const int DIM_2 = 2;
+    const int DIM_3 = 3;
+
+    std::string query_layout_str = std::string(layout_query);
+    std::string key_layout_str = std::string(layout_key); 
+    
+    at::SmallVector<int64_t, SIZE> output_size;
+    if (query_layout_str == "BSND") {
+        output_size = {query.size(DIM_0), query.size(DIM_1), key.size(DIM_2), sparse_count};
+    } else {
+        int n_dim_index = 0;
+        n_dim_index = (key_layout_str == "TND") ? DIM_1 : DIM_2;
+        output_size = {query.size(DIM_0), key.size(n_dim_index), sparse_count};       
+    }
+    // construct the output tensor
+    at::Tensor lightning_indexer_output = at::empty(output_size, query.options().dtype(at::kInt));
+
+    return lightning_indexer_output;
+}
+
 } // namespace meta
 } // namespace vllm_ascend
 
@@ -154,5 +185,7 @@ TORCH_LIBRARY_IMPL_EXPAND(CONCAT(_C, _ascend), Meta, ops) {
     ops.impl("mla_preprocess", &vllm_ascend::meta::mla_preprocess);
     // Grouped matmul swiglu quant weight nz tensor list
     ops.impl("grouped_matmul_swiglu_quant_weight_nz_tensor_list", &vllm_ascend::meta::grouped_matmul_swiglu_quant_weight_nz_tensor_list_meta);
+    // Lightning indexer
+    ops.impl("npu_lightning_indexer", &vllm_ascend::meta::npu_lightning_indexer_meta);
 }
 }
