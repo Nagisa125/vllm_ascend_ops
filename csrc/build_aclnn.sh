@@ -9,11 +9,11 @@ case "$SOC_VERSION" in
         exit 0
         ;;
     "ASCEND910B1")
-        CUSTOM_OPS="lightning_indexer"
+        CUSTOM_OPS="grouped_matmul_swiglu_quant;lightning_indexer"
         SOC_ARG="ascend910b"
         ;;
     "ASCEND910C")
-        CUSTOM_OPS="lightning_indexer"
+        CUSTOM_OPS="grouped_matmul_swiglu_quant;lightning_indexer"
         SOC_ARG="ascend910_93"
         ;;
     *)
@@ -26,7 +26,7 @@ esac
 cd csrc
 rm -rf build output
 echo "building custom ops $CUSTOM_OPS for $SOC_VERSION"
-bash build.sh -n $CUSTOM_OPS -c ascend910_93
+bash build.sh -n $CUSTOM_OPS -c $SOC_ARG
 
 # install custom ops
 ./output/CANN-custom_ops*.run --install-path=$ROOT_DIR/vllm_ascend/CANN
