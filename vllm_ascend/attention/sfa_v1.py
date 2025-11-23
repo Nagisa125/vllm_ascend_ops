@@ -535,7 +535,7 @@ class AscendSFAImpl(MLAAttentionImpl):
         seq_lens = attn_metadata.seq_lens
         cum_query_lens = attn_metadata.cum_query_lens
 
-        topk_indices = torch.ops.custom.npu_lightning_indexer(
+        topk_indices = torch.ops._C_ascend.npu_lightning_indexer(
             query=q,
             key=kv_cache[2],
             weights=weights,
